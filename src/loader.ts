@@ -2,34 +2,37 @@ import { transform } from '@lwc/compiler';
 const path = require('path');
 
 module.exports = function loader(source) {
-    const { resourcePath } = this;
-    const { namespace } = this.query;
-    const ext = path.extname(resourcePath);
-    const basename = path.basename(resourcePath, ext);
-    const extMap = {
-        ...this.query.extMap,
-        '.js': '.js',
-        '.css': '.css',
-        '.html': '.html',
-    };
-    const mappedExt = extMap[ext];
+  const { resourcePath } = this;
+  const { namespace } = this.query;
+  const ext = path.extname(resourcePath);
+  const basename = path.basename(resourcePath, ext);
+  const extMap = {
+    ...this.query.extMap,
+    '.js': '.js',
+    '.css': '.css',
+    '.html': '.html',
+  };
+  const mappedExt = extMap[ext];
 
-    if (mappedExt === undefined) {
-        throw new Error(`[lwc-loader] Cannot transform file with extension "${ext}". Please map "${ext}" to ".js", ".html" or ".css" in options.extMap`);
-    }
+  if (mappedExt === undefined) {
+    throw new Error(
+      `[lwc-loader] Cannot transform file with extension "${ext}". Please map "${ext}" to ".js", ".html" or ".css" in options.extMap`
+    );
+  }
 
-    const fileName = path.basename(resourcePath).replace(ext, mappedExt);
-    return transform(source, fileName, {
-        namespace: typeof namespace === 'string' ? namespace : namespace(resourcePath),
-        name: basename,
-        files: this.query.lwcAliases,
-        stylesheetConfig: {
-            customProperties: {
-                allowDefinition: true,
-            },
-        }
-    })
-    .then((data) => {
-        return data.code;
-    });
-}
+  const fileName = path.basename(resourcePath).replace(ext, mappedExt);
+  return transform(source, fileName, {
+    namespace:
+      typeof namespace === 'string' ? namespace : namespace(resourcePath),
+    name: basename,
+    // @ts-ignore
+    files: this.query.lwcAliases,
+    stylesheetConfig: {
+      customProperties: {
+        allowDefinition: true,
+      },
+    },
+  }).then((data) => {
+    return data.code;
+  });
+};
